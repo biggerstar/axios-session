@@ -63,7 +63,7 @@ exports.createAxiosSession = function (opt = {}) {
     // console.log('拦截器', res.status, res.config.url);
     return res
   }
-  service.interceptors.request.use(patchCookie, (err) => Promise.reject(err))
+  service.interceptors.request.use(patchCookie, (err) => Promise.resolve(err.response))
   service.interceptors.response.use(saveCookie, (err) => saveCookie(err.response))
 
   function getCookie(cookieDomain, name) {

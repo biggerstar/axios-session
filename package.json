@@ -1,6 +1,6 @@
 {
   "name": "@biggerstar/axios-session",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "axios 浏览状态保持",
   "main": "src/index.js",
   "types": "src/index.d.ts",
