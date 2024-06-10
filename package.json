@@ -1,0 +1,31 @@
+{
+  "name": "@biggerstar/axios-session",
+  "version": "0.0.1",
+  "description": "axios 浏览状态保持",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "typings": "src/index.d.ts",
+  "scripts": {
+  },
+  "author": "",
+  "license": "ISC",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/biggerstar/axios-session.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "dependencies": {
+    "axios": "^1.7.2",
+    "axios-retry": "^4.4.0",
+    "https-proxy-agent": "^7.0.4",
+    "random-useragent": "^0.5.0",
+    "set-cookie-parser": "^2.6.0",
+    "tough-cookie": "^4.1.4"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2"
+  }
+}
