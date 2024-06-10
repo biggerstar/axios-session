@@ -17,4 +17,4 @@ export type AxiosSessionReturn = import('axios').AxiosInstance & {
 /**
  * 模拟浏览器持久 cookie 访问
  * */
-export function createAxiosSession(options: AxiosSessionOptions): AxiosSessionReturn;
+export function createAxiosSession(options?: AxiosSessionOptions): AxiosSessionReturn;

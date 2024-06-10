@@ -2,7 +2,7 @@ const axios = require('axios')
 const userAgents = require("random-useragent")
 const {CookieJar} = require('tough-cookie')
 const {HttpsProxyAgent} = require("https-proxy-agent")
-const axiosRetry = require("axios-retry")
+const axiosRetry = require("axios-retry").default
 
 const setCookieParser = require("set-cookie-parser")
 
