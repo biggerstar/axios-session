@@ -39,12 +39,13 @@ exports.createAxiosSession = function (opt = {}) {
   }
   service.jar = cookieJar
 
-  const patchCookie = async (req) => {   /* 为请求添加上Cookie */
+  const additionalCookie = (req) => {   /* 为请求添加上Cookie */
     const urls = new URL(req.url)
     const cookieDomain = urls.origin
     const recordCookie = cookieJar.getCookieStringSync(cookieDomain)
     const reqCookie = req.headers['Cookie'] || req.headers['cookie']
-    req.headers['Cookie'] = reqCookie ? `${recordCookie};${reqCookie}` : recordCookie // 追加历史获取的 cookie
+    const cookie = reqCookie ? `${recordCookie};${reqCookie}` : recordCookie // 追加历史获取的 cookie
+    if (cookie) req.headers['Cookie'] = cookie
     // console.log(req.headers['Cookie'])
     return req
   }
@@ -63,11 +64,24 @@ exports.createAxiosSession = function (opt = {}) {
     // console.log('拦截器', res.status, res.config.url);
     return res
   }
-  service.interceptors.request.use(patchCookie, (err) => Promise.resolve(err.response))
-  service.interceptors.response.use(saveCookie, async (err) => {
-    await saveCookie(err.response)
-    return Promise.reject(err.response)
-  })
+  service.interceptors.request.use(
+    (req) => {
+      additionalCookie(req)
+      return req
+    },
+    (err) => {
+      return Promise.reject(err)
+    }
+  )
+  service.interceptors.response.use(
+    async (res) => {
+      await saveCookie(res)
+      return res
+    },
+    async (err) => {
+      await saveCookie(err.response)
+      return Promise.reject(err)
+    })
 
   function getCookie(cookieDomain, name) {
     const parsedCookies = setCookieParser.parse(cookieJar.getSetCookieStringsSync(cookieDomain))
@@ -78,8 +92,19 @@ exports.createAxiosSession = function (opt = {}) {
     cookieJar.setCookieSync(`${name}=${data}`, cookieDomain)
   }
 
+  function deleteCookie(cookieDomain, name) {
+    const cookies = cookieJar.getCookiesSync(cookieDomain)
+    const remainingCookies = cookies.filter(cookie => cookie.key !== name.trim());
+    cookieJar.removeAllCookies(() => {
+      remainingCookies.forEach(cookie => {
+        cookieJar.setCookieSync(cookie.toString(), cookieDomain)
+      });
+    });
+  }
+
   service.getCookie = getCookie
   service.setCookie = setCookie
+  service.deleteCookie = deleteCookie
 
   axiosRetry(service, {             //传入axios实例
     retries,          // 设置自动发送请求次数

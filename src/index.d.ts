@@ -14,6 +14,8 @@ export type AxiosSessionReturn = import('axios').AxiosInstance & {
   getCookie?(cookieDomain: string, name: string): void
   /** 设置 cookie 内容 */
   setCookie?(cookieDomain: string, name: string, data: any): void
+  /** 删除 cookie 内容 */
+  deleteCookie?(cookieDomain: string, name: string): void
 }
 
 /**
