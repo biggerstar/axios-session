@@ -64,7 +64,10 @@ exports.createAxiosSession = function (opt = {}) {
     return res
   }
   service.interceptors.request.use(patchCookie, (err) => Promise.resolve(err.response))
-  service.interceptors.response.use(saveCookie, (err) => saveCookie(err.response))
+  service.interceptors.response.use(saveCookie, async (err) => {
+    await saveCookie(err.response)
+    return Promise.reject(err.response)
+  })
 
   function getCookie(cookieDomain, name) {
     const parsedCookies = setCookieParser.parse(cookieJar.getSetCookieStringsSync(cookieDomain))
