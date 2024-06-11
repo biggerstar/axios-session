@@ -71,7 +71,12 @@ exports.createAxiosSession = function (opt = {}) {
     return parsedCookies.find(item => item.name === name)
   }
 
+  function setCookie(cookieDomain, name, data) {
+    cookieJar.setCookieSync(`${name}=${data}`, cookieDomain)
+  }
+
   service.getCookie = getCookie
+  service.setCookie = setCookie
 
   axiosRetry(service, {             //传入axios实例
     retries,          // 设置自动发送请求次数

@@ -12,6 +12,8 @@ export type AxiosSessionReturn = import('axios').AxiosInstance & {
   jar: import('tough-cookie').CookieJar,
   /** 获取 cookie 内容 */
   getCookie?(cookieDomain: string, name: string): void
+  /** 设置 cookie 内容 */
+  setCookie?(cookieDomain: string, name: string, data: any): void
 }
 
 /**
