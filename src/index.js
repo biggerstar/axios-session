@@ -41,27 +41,19 @@ exports.createAxiosSession = function (opt = {}) {
 
   const additionalCookie = (req) => {   /* 为请求添加上Cookie */
     const urls = new URL(req.url)
-    const cookieDomain = urls.origin
-    const recordCookie = cookieJar.getCookieStringSync(cookieDomain)
+    const recordCookie = cookieJar.getCookieStringSync(urls.href)
     const reqCookie = req.headers['Cookie'] || req.headers['cookie']
     const cookie = reqCookie ? `${recordCookie};${reqCookie}` : recordCookie // 追加历史获取的 cookie
     if (cookie) req.headers['Cookie'] = cookie
-    // console.log(req.headers['Cookie'])
     return req
   }
   const saveCookie = async (res) => {   /* 保存Cookie */
     if (!res.headers?.['set-cookie']) return
-    const setCookie = res.headers['set-cookie']
-    const parsedCookies = setCookieParser.parse(setCookie)
-    const urls = new URL(res.config.url)
-    const cookieDomain = urls.origin
-    parsedCookies.forEach(cookieItem => {
-      // console.log(cookieItem)
-      const domain = cookieItem.domain ? `${urls.protocol}//${cookieItem.domain}` : cookieDomain + (cookieItem.path || '')
-      cookieJar.setCookieSync(`${cookieItem.name}=${cookieItem.value}`, domain)
-    })  // 保存 cookie
-    // console.log(cookieJar.getCookieStringSync(cookieDomain))
-    // console.log('拦截器', res.status, res.config.url);
+    const setCookie = res.headers['set-cookie'] || []
+    setCookie.forEach(cookieStr => {
+      const reqUrl = res.request?.['res']?.['responseUrl'] || res.config?.url || res.url
+      cookieJar.setCookieSync(cookieStr, reqUrl)
+    })
     return res
   }
   service.interceptors.request.use(

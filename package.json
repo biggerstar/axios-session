@@ -1,12 +1,11 @@
 {
   "name": "@biggerstar/axios-session",
-  "version": "0.0.8",
+  "version": "0.0.13",
   "description": "axios 浏览状态保持",
   "main": "src/index.js",
   "types": "src/index.d.ts",
   "typings": "src/index.d.ts",
-  "scripts": {
-  },
+  "scripts": {},
   "author": "",
   "license": "ISC",
   "repository": {
@@ -18,6 +17,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
+    "@types/tough-cookie": "^4.0.5",
     "axios": "^1.7.2",
     "axios-retry": "^4.4.0",
     "https-proxy-agent": "^7.0.4",
