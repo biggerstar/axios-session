@@ -5,6 +5,7 @@ export type AxiosSessionOptions = import('axios').AxiosRequestConfig & {
   /** 重试条件 */
   retryCondition?(err: import('axios').AxiosError): boolean
   retryDelay?(): number
+  successCodeList?: string[]
 } & Record<any, any>
 
 export type AxiosSessionReturn = import('axios').AxiosInstance & {

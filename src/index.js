@@ -7,7 +7,12 @@ const axiosRetry = require("axios-retry").default
 const setCookieParser = require("set-cookie-parser")
 
 exports.createAxiosSession = function (opt = {}) {
-  const {retries = 0, proxyString, retryCondition, retryDelay = () => 200} = opt
+  const {
+    retries = 0,
+    proxyString,
+    retryCondition,
+    retryDelay = () => 200,
+  } = opt
   const cookieJar = new CookieJar(void 0, void 0)
   let agent = {}
   if (opt.proxyString) {
@@ -48,7 +53,7 @@ exports.createAxiosSession = function (opt = {}) {
     return req
   }
   const saveCookie = async (res) => {   /* 保存Cookie */
-    if (!res.headers?.['set-cookie']) return
+    if (!res?.headers?.['set-cookie']) return
     const setCookie = res.headers['set-cookie'] || []
     setCookie.forEach(cookieStr => {
       const reqUrl = res.request?.['res']?.['responseUrl'] || res.config?.url || res.url
