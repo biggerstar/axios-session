@@ -1,11 +1,22 @@
 {
   "name": "@biggerstar/axios-session",
-  "version": "0.0.15",
+  "version": "0.3.5",
   "description": "axios 浏览状态保持",
-  "main": "src/index.js",
-  "types": "src/index.d.ts",
-  "typings": "src/index.d.ts",
-  "scripts": {},
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "typings": "./dist/index.d.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "vite-run dev -y",
+    "build": "vite-run build -y",
+    "publish:npm": "npm run build && npm publish",
+    "test": "tsx test/index.ts"
+  },
+  "files": [
+    "dist",
+    "src",
+    "package.json"
+  ],
   "author": "",
   "license": "ISC",
   "repository": {
@@ -16,16 +27,30 @@
     "access": "public",
     "registry": "https://registry.npmjs.org/"
   },
+  "exports": {
+    ".": {
+      "default": "./dist/index.js",
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "dependencies": {
     "@types/tough-cookie": "^4.0.5",
     "axios": "^1.7.2",
     "axios-retry": "^4.4.0",
     "https-proxy-agent": "^7.0.4",
-    "random-useragent": "^0.5.0",
     "set-cookie-parser": "^2.6.0",
-    "tough-cookie": "^4.1.4"
+    "tough-cookie": "^4.1.4",
+    "user-agents": "^1.1.236"
   },
   "devDependencies": {
-    "@types/node": "^20.14.2"
+    "@types/node": "^20.14.2",
+    "@types/set-cookie-parser": "^2.4.9",
+    "@types/user-agents": "^1.0.4",
+    "tsx": "^4.15.5",
+    "vite": "^5.3.1",
+    "vite-plugin-copy-dts": "^0.0.6",
+    "vite-plugin-dts": "^3.9.1",
+    "vite-run": "^1.7.1"
   }
 }

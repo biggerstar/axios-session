@@ -1,0 +1,135 @@
+import {CookieJar} from "tough-cookie";
+import setCookieParser, {Cookie} from "set-cookie-parser";
+import UserAgent from "user-agents";
+import axios, {AxiosInstance} from "axios";
+import axiosRetry from "axios-retry";
+import {HttpsProxyAgent} from "https-proxy-agent";
+import {AxiosSessionRequestConfig} from "./AxiosSessionRequestConfig";
+import {AxiosSessionResponse} from "./AxiosSessionResponse";
+
+export class AxiosSessionInstance {
+  /*--------------axios 实例的引用, 白名单模式-------------------*/
+  /** 代理 axios 的 全局默认配置 */
+  public defaults: AxiosInstance['defaults']
+  public request: <T = any, R = AxiosSessionResponse<T>, D = any>(config: Partial<AxiosSessionRequestConfig<D>>) => Promise<R>;
+
+  public interceptors: AxiosInstance['interceptors']
+  /*-----------------------------------------*/
+  /** jar tough-cookie 实例 */
+  public jar: CookieJar
+
+  constructor(opt: Partial<AxiosSessionRequestConfig> = {}) {
+    const cookieJar = new CookieJar(void 0, void 0)
+    this.jar = cookieJar
+    const userAgent = new UserAgent();
+    const service: AxiosSessionInstance = <any>axios.create({
+      maxRedirects: 0,
+      timeout: 10000,
+      withCredentials: true,
+      keepSession: true,
+      ...opt || {},
+    })
+    Object.assign(service.defaults.headers, {
+      "Cache-Control": "no-cache",
+    })
+
+    this.interceptors = service.interceptors
+    this.defaults = service.defaults
+    this.request = service.request.bind(service)
+
+    const additionalCookie = (req: AxiosSessionRequestConfig) => {   /* 为请求添加上Cookie */
+      if (!req.keepSession) return req
+      const urls = new URL(req.url)
+      const recordCookie = cookieJar.getCookieStringSync(urls.href)
+      const reqCookie = req.headers['Cookie'] || req.headers['cookie']
+      const cookie = reqCookie ? `${recordCookie};${reqCookie}` : recordCookie // 追加历史获取的 cookie
+      if (cookie) req.headers['Cookie'] = cookie
+      return req
+    }
+    const saveCookie = async (res: AxiosSessionResponse) => {   /* 保存Cookie */
+      if (!res?.config?.keepSession) return res
+      if (!res?.headers?.['set-cookie']) return res
+      const setCookie = res.headers['set-cookie'] || []
+      setCookie.forEach(cookieStr => {
+        const reqUrl = res.request?.['res']?.['responseUrl'] || res.config?.url
+        try {
+          cookieJar.setCookieSync(cookieStr, reqUrl)
+        } catch (e) {
+        }
+      })
+      return res
+    }
+    const patchRetry = (req: AxiosSessionRequestConfig) => {
+      const axiosRetryConfig = service?.['axios-retry']
+      if (!axiosRetryConfig) axiosRetry(<any>service, req)
+      Object.assign(axiosRetryConfig || {}, req)
+    }
+    const patchProxy = (req: AxiosSessionRequestConfig) => {
+      // console.log(req)
+      if (req.proxyString) {
+        try {
+          const urls = new URL(opt.proxyString)
+          service.defaults.headers["X-Real-IP"] = urls.hostname
+        } catch (e) {
+        }
+        const proxyAgent = new HttpsProxyAgent(req.proxyString)
+        if (!req.httpAgent && !req.httpsAgent) {
+          req.httpAgent = proxyAgent
+          req.httpsAgent = proxyAgent
+        } else {
+          throw new Error('您可以直接使用 proxyString, 此时将会自动设置httpAgent, httpsAgent')
+        }
+      }
+    }
+
+    function patchHeader(req: AxiosSessionRequestConfig) {
+      if (req.autoUserAgent) req.headers["User-Agent"] = userAgent.toString()
+    }
+
+    service.interceptors.request.use(
+      (req: any) => {
+        additionalCookie(req)
+        patchRetry(req)
+        patchProxy(req)
+        patchHeader(req)
+        return req
+      },
+      (err) => {
+        return Promise.reject(err)
+      }
+    )
+    service.interceptors.response.use(
+      async (res: AxiosSessionResponse) => {
+        await saveCookie(res)
+        return res
+      },
+      async (err) => {
+        await saveCookie(err.response)
+        return Promise.reject(err)
+      })
+  }
+
+  /** 获取 cookie 内容 */
+  public getCookie(url: string, name: string): Cookie {
+    const parsedCookies = setCookieParser.parse(this.jar.getSetCookieStringsSync(url))
+    return parsedCookies.find((item: Cookie) => item.name === name)
+  }
+
+  /** 设置 cookie 内容 */
+  public setCookie(url: string, name: string, data: any): void {
+    this.jar.setCookieSync(`${name}=${data}`, url)
+
+  }
+
+  /** 删除 cookie 内容 */
+  public deleteCookie(url: string, name: string): void {
+    const cookies = this.jar.getCookiesSync(url)
+    const remainingCookies = cookies.filter(cookie => cookie.key !== name.trim());
+    this.jar.removeAllCookies(() => {
+      remainingCookies.forEach(cookie => {
+        this.jar.setCookieSync(cookie.toString(), url)
+      });
+    });
+  }
+}
+
