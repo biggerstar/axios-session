@@ -6,17 +6,19 @@ import axiosRetry from "axios-retry";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {AxiosSessionRequestConfig} from "./AxiosSessionRequestConfig";
 import {AxiosSessionResponse} from "./AxiosSessionResponse";
+import {v4 as uuidV4} from 'uuid'
 
 export class AxiosSessionInstance {
   /*--------------axios 实例的引用, 白名单模式-------------------*/
   /** 代理 axios 的 全局默认配置 */
   public defaults: AxiosInstance['defaults']
   public request: <T = any, R = AxiosSessionResponse<T>, D = any>(config: Partial<AxiosSessionRequestConfig<D>>) => Promise<R>;
-
+  public setAxiosDefaults: (config: Partial<AxiosSessionRequestConfig>) => void
   public interceptors: AxiosInstance['interceptors']
   /*-----------------------------------------*/
   /** jar tough-cookie 实例 */
   public jar: CookieJar
+  public sessionId: string
 
   constructor(opt: Partial<AxiosSessionRequestConfig> = {}) {
     const cookieJar = new CookieJar(void 0, void 0)
@@ -32,10 +34,14 @@ export class AxiosSessionInstance {
     Object.assign(service.defaults.headers, {
       "Cache-Control": "no-cache",
     })
-
+    this.sessionId = uuidV4()
     this.interceptors = service.interceptors
     this.defaults = service.defaults
     this.request = service.request.bind(service)
+
+    this.setAxiosDefaults = function (config) {
+      Object.assign(service.defaults, config || {})
+    }
 
     const additionalCookie = (req: AxiosSessionRequestConfig) => {   /* 为请求添加上Cookie */
       if (!req.keepSession) return req
@@ -73,12 +79,8 @@ export class AxiosSessionInstance {
         } catch (e) {
         }
         const proxyAgent = new HttpsProxyAgent(req.proxyString)
-        if (!req.httpAgent && !req.httpsAgent) {
-          req.httpAgent = proxyAgent
-          req.httpsAgent = proxyAgent
-        } else {
-          throw new Error('您可以直接使用 proxyString, 此时将会自动设置httpAgent, httpsAgent')
-        }
+        req.httpAgent = proxyAgent;
+        req.httpsAgent = proxyAgent;
       }
     }
 
@@ -109,19 +111,19 @@ export class AxiosSessionInstance {
       })
   }
 
-  /** 获取 cookie 内容 */
+  /** 通过 url 获取 cookie 内容 */
   public getCookie(url: string, name: string): Cookie {
     const parsedCookies = setCookieParser.parse(this.jar.getSetCookieStringsSync(url))
     return parsedCookies.find((item: Cookie) => item.name === name)
   }
 
-  /** 设置 cookie 内容 */
+  /** 通过 url 设置 cookie 内容 */
   public setCookie(url: string, name: string, data: any): void {
     this.jar.setCookieSync(`${name}=${data}`, url)
 
   }
 
-  /** 删除 cookie 内容 */
+  /** 通过 url 删除 cookie 内容 */
   public deleteCookie(url: string, name: string): void {
     const cookies = this.jar.getCookiesSync(url)
     const remainingCookies = cookies.filter(cookie => cookie.key !== name.trim());
@@ -130,6 +132,10 @@ export class AxiosSessionInstance {
         this.jar.setCookieSync(cookie.toString(), url)
       });
     });
+  }
+
+  public clearAllCookies() {
+    this.jar.removeAllCookiesSync()
   }
 }
 
