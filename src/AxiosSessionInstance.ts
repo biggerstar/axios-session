@@ -1,3 +1,5 @@
+// noinspection JSUnusedGlobalSymbols
+
 import {CookieJar} from "tough-cookie";
 import setCookieParser, {Cookie} from "set-cookie-parser";
 import UserAgent from "user-agents";
@@ -25,6 +27,10 @@ export class AxiosSessionInstance {
     this.jar = cookieJar
     const userAgent = new UserAgent();
     const service: AxiosSessionInstance = <any>axios.create({
+      'axios-retry': {
+        retries: 0,
+        retryDelay: () => 0,
+      },
       maxRedirects: 0,
       timeout: 10000,
       withCredentials: true,
@@ -88,12 +94,17 @@ export class AxiosSessionInstance {
       if (req.autoUserAgent) req.headers["User-Agent"] = userAgent.toString()
     }
 
+    function patchOther(req: AxiosSessionRequestConfig) {
+      if (!req.meta || typeof req.meta !== 'object') req.meta = {}
+    }
+
     service.interceptors.request.use(
       (req: any) => {
         additionalCookie(req)
         patchRetry(req)
         patchProxy(req)
         patchHeader(req)
+        patchOther(req)
         return req
       },
       (err) => {
