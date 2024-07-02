@@ -11,7 +11,7 @@ export default defineViteRunConfig({
   targets: {
     'axios-session': {
       build: [
-        ['build_lib', 'es'],
+        ['build_lib', 'es', 'cjs'],
       ],
       types: [
         ['types'],
@@ -22,9 +22,9 @@ export default defineViteRunConfig({
     },
   },
   build: {
-    umd: {
+    cjs: {
       lib: {
-        formats: ['umd']
+        formats: ['cjs']
       }
     },
     es: {
@@ -43,7 +43,13 @@ export default defineViteRunConfig({
         lib: {
           entry: resolve(options.packagePath, 'src/index.ts'),
           name: options.name,
-          fileName: (format: string) => `index.js`,
+          fileName: (format: string) => {
+            const names = {
+              es: 'mjs',
+              cjs: 'cjs',
+            }
+            return `index.${names[format]}`
+          },
         },
         rollupOptions: {
           external: [

@@ -51,6 +51,7 @@ export class AxiosSessionInstance {
 
     const additionalCookie = (req: AxiosSessionRequestConfig) => {   /* 为请求添加上Cookie */
       if (!req.keepSession) return req
+      if (!req.url.startsWith('http') && req.url.startsWith('//')) req.url = `https:${req.url}`
       const urls = new URL(req.url)
       const recordCookie = cookieJar.getCookieStringSync(urls.href)
       const reqCookie = req.headers['Cookie'] || req.headers['cookie']
