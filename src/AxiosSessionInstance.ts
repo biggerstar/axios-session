@@ -8,7 +8,7 @@ import axiosRetry from "axios-retry";
 import {HttpsProxyAgent} from "https-proxy-agent";
 import {AxiosSessionRequestConfig} from "./AxiosSessionRequestConfig";
 import {AxiosSessionResponse} from "./AxiosSessionResponse";
-import {v4 as uuidV4} from 'uuid'
+import {uuidv7} from 'uuidv7'
 
 export class AxiosSessionInstance {
   /*--------------axios 实例的引用, 白名单模式-------------------*/
@@ -40,7 +40,7 @@ export class AxiosSessionInstance {
     Object.assign(service.defaults.headers, {
       "Cache-Control": "no-cache",
     })
-    this.sessionId = uuidV4()
+    this.sessionId = uuidv7()
     this.interceptors = service.interceptors
     this.defaults = service.defaults
     this.request = service.request.bind(service)
@@ -74,7 +74,7 @@ export class AxiosSessionInstance {
     }
     const patchRetry = (req: AxiosSessionRequestConfig) => {
       const axiosRetryConfig = service?.['axios-retry']
-      if (!axiosRetryConfig) axiosRetry(<any>service, req)
+      if (!axiosRetryConfig) (axiosRetry['default'] || axiosRetry)(<any>service, req)
       Object.assign(axiosRetryConfig || {}, req)
     }
     const patchProxy = (req: AxiosSessionRequestConfig) => {
