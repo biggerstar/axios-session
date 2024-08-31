@@ -1,6 +1,6 @@
 import {AxiosSessionRequestConfig} from "./AxiosSessionRequestConfig";
 import {AxiosSessionInstance} from "./AxiosSessionInstance";
-
+export * from "axios";
 export * from "./AxiosSessionInstance";
 export * from "./AxiosSessionRequestConfig";
 export * from "./AxiosSessionResponse";

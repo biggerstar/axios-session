@@ -1,6 +1,7 @@
 import {AxiosError, AxiosRequestConfig} from "axios";
 
-declare interface AxiosSessionRequestOptions {
+export declare interface AxiosSessionRequestOptions {
+  [key: string]: any
   /**
    * 如果传入 proxyString 会自动使用过理, 支持 http https sock5
    * @default void

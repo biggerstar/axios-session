@@ -59,7 +59,7 @@ export class AxiosSessionInstance {
       if (cookie) req.headers['Cookie'] = cookie
       return req
     }
-    const saveCookie = async (res: AxiosSessionResponse) => {   /* 保存Cookie */
+    const saveCookie = (res: AxiosSessionResponse) => {   /* 保存Cookie */
       if (!res?.config?.keepSession) return res
       if (!res?.headers?.['set-cookie']) return res
       const setCookie = res.headers['set-cookie'] || []
@@ -113,12 +113,12 @@ export class AxiosSessionInstance {
       }
     )
     service.interceptors.response.use(
-      async (res: AxiosSessionResponse) => {
-        await saveCookie(res)
+      (res: AxiosSessionResponse) => {
+        saveCookie(res)
         return res
       },
-      async (err) => {
-        await saveCookie(err.response)
+      (err) => {
+        saveCookie(err.response)
         return Promise.reject(err)
       })
   }
