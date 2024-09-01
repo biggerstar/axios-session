@@ -31,8 +31,6 @@ export class AxiosSessionInstance {
         retries: 0,
         retryDelay: () => 0,
       },
-      maxRedirects: 0,
-      timeout: 10000,
       withCredentials: true,
       keepSession: true,
       ...opt || {},
