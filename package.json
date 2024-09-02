@@ -1,6 +1,6 @@
 {
   "name": "@biggerstar/axios-session",
-  "version": "0.3.26",
+  "version": "0.3.28",
   "description": "axios 浏览状态保持",
   "main": "./dist/index.cjs",
   "module": "./dist/index.mjs",

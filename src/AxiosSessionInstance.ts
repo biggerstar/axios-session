@@ -83,7 +83,9 @@ export class AxiosSessionInstance {
           service.defaults.headers["X-Real-IP"] = urls.hostname
         } catch (e) {
         }
-        const proxyAgent = new HttpsProxyAgent(req.proxyString)
+        const proxyAgent = new HttpsProxyAgent(req.proxyString, {
+          timeout: req.timeout || service.defaults.timeout
+        })
         req.httpAgent = proxyAgent;
         req.httpsAgent = proxyAgent;
       }
